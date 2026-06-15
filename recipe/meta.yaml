@@ -235,6 +235,10 @@ extra:
     # libcublas-dev/nccl/openmpi have independent versions with no CBC pin var;
     # cuda-version steers the CUDA major. Same approach as magma-feedstock.
     - host_section_needs_exact_pinnings
+    # anaconda.yaml lists all four outputs (per review), but the commlayer-*
+    # outputs are conditionally skipped, so the 1-to-1 check can't find them
+    # at lint render.
+    - missing_source_tracking
   recipe-maintainers:
     - conda-forge/cuda
     - kvoronin

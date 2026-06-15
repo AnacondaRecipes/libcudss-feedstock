@@ -6,3 +6,5 @@ upstream_sources:
     packages:
       - libcudss
       - libcudss-dev
+      - libcudss-commlayer-nccl
+      - libcudss-commlayer-mpi
