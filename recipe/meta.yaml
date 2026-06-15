@@ -143,8 +143,11 @@ outputs:
         - if not exist %LIBRARY_INC%\\cudss_data_types.h exit 1  # [win]
         - if not exist %LIBRARY_INC%\\cudss_threading_interface.h exit 1  # [win]
         - if not exist %LIBRARY_LIB%\\cmake\\cudss\\cudss-config.cmake exit 1  # [win]
-        - cmake ${CMAKE_ARGS} -GNinja test
-        - cmake --build .
+        # Linux-only: the upstream header compile-test uses C11 `_Alignas`
+        # (rejected by MSVC's default C mode) and unix `${CMAKE_ARGS}` syntax.
+        # The win file-existence checks above already validate the dev package.
+        - cmake ${CMAKE_ARGS} -GNinja test  # [linux]
+        - cmake --build .                   # [linux]
     # Metadata will be inherited from top-level
 
 # loadable modules; optional and only needed at runtime
