@@ -3,8 +3,3 @@ upstream_sources:
   - webpage:
       url: https://api.anaconda.org/package/conda-forge/libcudss
       regex: '"version":\s*"([^"]+)"'
-    packages:
-      - libcudss
-      - libcudss-dev
-      - libcudss-commlayer-nccl
-      - libcudss-commlayer-mpi

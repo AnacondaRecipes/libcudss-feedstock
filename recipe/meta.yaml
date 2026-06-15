@@ -70,6 +70,11 @@ outputs:
       run:
         - {{ pin_compatible('cuda-version', max_pin='x', min_pin='x') }}  # [cuda_compiler_version != "None"]
         - libcublas
+        # The OpenMP threading layer (libcudss_mtlayer_gomp/vcomp14) links the
+        # OpenMP runtime directly, so it must be in run. AR's overlinking check
+        # is stricter than conda-forge's here.
+        - libgomp  # [linux]
+        - vcomp14  # [win]
       run_constrained:
         - libcudss0 <0.0.0a0
         - {{ pin_subpackage("libcudss-commlayer-nccl", exact=True) }}
