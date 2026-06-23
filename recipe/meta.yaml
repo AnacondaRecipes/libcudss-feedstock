@@ -6,9 +6,6 @@ package:
   name: libcudss-split
   version: {{ version }}
 
-{% set arm_variant_type = arm_variant_type | default("sbsa") %}
-{% set cuda_compiler_version = cuda_compiler_version | default("None") %}
-
 source:
   - url: "https://developer.download.nvidia.com/compute/cudss/redist/libcudss/linux-x86_64/libcudss-linux-x86_64-{{ version }}_cuda12-archive.tar.xz"  # [linux and x86_64 and (cuda_compiler_version or "").startswith("12")]
     sha256: "946571d9ea164f948e402dd97a14541cb90fbec800336cfa7ae644af5937632f"  # [linux and x86_64 and (cuda_compiler_version or "").startswith("12")]
@@ -28,8 +25,8 @@ source:
     sha256: "4085361899eaf08f6b707321b33a2d5263ac986015527bef8e500f2c102f0258"  # [linux and aarch64 and (cuda_compiler_version or "").startswith("13") and arm_variant_type == "tegra"]
 
 build:
-  number: 1
-  skip: true  # [(cuda_compiler_version in (None, "None", "11.8")) or (not (linux64 or aarch64 or win64))]
+  number: 0
+  skip: true  # [osx or (cuda_compiler_version in (None, "None", "11.8"))]
   script:   # [win]
     - xcopy include %LIBRARY_INC% /E /I /Y /V  # [win]
     - xcopy lib %LIBRARY_LIB% /E /I /Y /V  # [win]
@@ -73,6 +70,8 @@ outputs:
       run:
         - {{ pin_compatible('cuda-version', max_pin='x', min_pin='x') }}  # [cuda_compiler_version != "None"]
         - libcublas
+        - libgomp  # [linux]
+        - vcomp14  # [win]
       run_constrained:
         - libcudss0 <0.0.0a0
         - {{ pin_subpackage("libcudss-commlayer-nccl", exact=True) }}
@@ -93,8 +92,11 @@ outputs:
       summary: The NVIDIA cuDSS runtime library (with a pre-built threading layer for OpenMP).
       license: LicenseRef-NVIDIA-End-User-License-Agreement
       license_file: LICENSE
+      license_family: Other
       description: >-
         This is a runtime package only. Developers should install libcudss-dev to build with cuDSS.
+      doc_url: https://docs.nvidia.com/cuda/cudss/
+      dev_uri: https://docs.nvidia.com/cuda/cudss/
 
   - name: libcudss-dev
     build:
@@ -125,7 +127,7 @@ outputs:
         - {{ compiler('cuda') }}
         - {{ stdlib("c") }}
         - cmake
-        - ninja
+        - ninja-base
       commands:
         - test -f $PREFIX/include/cudss.h  # [linux]
         - test -f $PREFIX/include/cudss_distributed_interface.h  # [linux]
@@ -140,7 +142,6 @@ outputs:
         - if not exist %LIBRARY_LIB%\\cmake\\cudss\\cudss-config.cmake exit 1  # [win]
         - cmake ${CMAKE_ARGS} -GNinja test
         - cmake --build .
-    # Metadata will be inherited from top-level
 
 # loadable modules; optional and only needed at runtime
 
@@ -167,8 +168,11 @@ outputs:
       summary: Install this package to enable NCCL for cuDSS
       license: LicenseRef-NVIDIA-End-User-License-Agreement
       license_file: LICENSE
+      license_family: Other
       description: >-
         This is a runtime package only. Developers should install libcudss-dev to build with cuDSS.
+      doc_url: https://docs.nvidia.com/cuda/cudss/
+      dev_uri: https://docs.nvidia.com/cuda/cudss/
 
   - name: libcudss-commlayer-mpi
     build:
@@ -196,23 +200,30 @@ outputs:
       summary: Install this package to enable MPI for cuDSS
       license: LicenseRef-NVIDIA-End-User-License-Agreement
       license_file: LICENSE
+      license_family: Other
       description: >-
         This is a runtime package only. Developers should install libcudss-dev to build with cuDSS.
+      doc_url: https://docs.nvidia.com/cuda/cudss/
+      dev_uri: https://docs.nvidia.com/cuda/cudss/
 
-# NOTE: Metadata inheritance from this section to the outputs is all or nothing. Only the
-# -dev package and the feedstock readme are inheriting this metadata.
 about:
   home: https://developer.nvidia.com/cudss
   license: LicenseRef-NVIDIA-End-User-License-Agreement
   license_file: LICENSE
   license_url: https://docs.nvidia.com/cuda/cudss/license.html
+  license_family: Other
   summary: The NVIDIA cuDSS development package.
-  description: >-
-    NVIDIA cuDSS is an optimized, first-generation GPU-accelerated Direct Sparse Solver library for solving linear systems with sparse matrices. Direct Sparse Solvers are an important part of numerical computing as they provide a general robust way of solving large linear systems without and are capable of taking advantage
-    of both high compute throughput and memory bandwidth of the GPUs.
+  description: |
+    NVIDIA cuDSS is an optimized, first-generation GPU-accelerated Direct Sparse Solver library for solving linear systems with sparse matrices.
+    Direct Sparse Solvers are an important part of numerical computing as they provide a general robust way of solving large linear systems
+    without and are capable of taking advantage of both high compute throughput and memory bandwidth of the GPUs.
   doc_url: https://docs.nvidia.com/cuda/cudss/
+  dev_uri: https://docs.nvidia.com/cuda/cudss/
 
 extra:
+  skip-lints:
+    - missing_dev_url
+    - deprecate_license_url
   recipe-maintainers:
     - conda-forge/cuda
     - kvoronin
