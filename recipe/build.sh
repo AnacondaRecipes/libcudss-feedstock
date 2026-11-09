@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -exo pipefail
 
 cp -rv include $PREFIX
 cp -rv lib $PREFIX
